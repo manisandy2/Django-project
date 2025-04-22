@@ -50,6 +50,11 @@ from django.urls import path, include, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -63,8 +68,15 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # Swagger UI
-    re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     
+    # Swagger UI
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    
+    # Redoc (optional)
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     # Admin panel
     path('admin/', admin.site.urls),
 

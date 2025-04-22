@@ -99,3 +99,4 @@ def incoming_data(request):
     push_to_destinations.delay(event_id, account.id, request.data)
 
     return Response({"success": True, "message": "Data Received"})
+

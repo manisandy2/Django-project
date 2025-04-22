@@ -1,6 +1,0 @@
-<h2>Account List</h2>
-<ul>
-  {% for account in accounts %}
-    <li><a href="{% url 'account_detail' account.pk %}">{{ account.account_name }}</a></li>
-  {% endfor %}
-</ul>
