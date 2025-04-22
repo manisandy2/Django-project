@@ -14,9 +14,62 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+
+# from django.contrib import admin
+# from django.urls import path,include,re_path
+# # from django.conf.urls import url
+# from rest_framework_swagger.views import get_swagger_view
+
+# schema_view = get_swagger_view(title='Pastebin API')
+
+# # urlpatterns = [
+# #     url(r'^$', schema_view)
+# # ]
+
+
+
+# # urlpatterns = [
+# #     url(r'^$', schema_view),
+# #     path('admin/', admin.site.urls),
+# #     path("account/",include("Account.urls")),
+# #     path("location/",include("Location.urls")),
+# #     path("profile/",include("Profile.urls")),
+# # ]
+# urlpatterns = [
+#     re_path(r'^$', schema_view),
+#     path('admin/', admin.site.urls),
+#     path("account/", include("Account.urls")),
+#     path("location/", include("Location.urls")),
+#     path("profile/", include("Profile.urls")),
+# ]
+
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include, re_path
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Your API Title",
+        default_version='v1',
+        description="API documentation",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
+    # Swagger UI
+    re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    
+    # Admin panel
     path('admin/', admin.site.urls),
+
+    # App-specific routes
+    path('account/', include('Account.urls')),
+    path('location/', include('Location.urls')),
+    path('profile/', include('Profile.urls')),
 ]

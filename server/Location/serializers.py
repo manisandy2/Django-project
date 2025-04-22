@@ -31,6 +31,7 @@ class LogSerializer(serializers.ModelSerializer):
             'account', 'account_name',
             'destination', 'destination_url',
             'received_timestamp', 'processed_timestamp',
-            'received_data', 'status'
+            'received_data', 'status',
+            'received_data', 'status', 'response_message'
         ]
         read_only_fields = fields  # make log read-only through API

@@ -2,12 +2,14 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from .models import Account
 import uuid
+# import HTMLTestRunner
+import unittest
 
 class AccountModelTest(TestCase):
     def setUp(self):
         # Create a custom user for testing
         self.user = get_user_model().objects.create_user(
-            username="testuser", password="testpassword"
+            email="testuser@gmail.com", password="testpassword"
         )
     
     def test_account_creation(self):
@@ -71,3 +73,9 @@ class AccountModelTest(TestCase):
         
         # Test that website can be null
         self.assertIsNone(account.website)
+
+# if __name__ == "__main__":
+#     suite = unittest.TestLoader().loadTestsFromTestCase(AccountModelTest)
+#     with open("test_report.html", "w") as report_file:
+#         runner = HTMLTestRunner.HTMLTestRunner(stream=report_file, verbosity=2)
+#         runner.run(suite)

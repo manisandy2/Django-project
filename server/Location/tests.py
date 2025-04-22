@@ -1,26 +1,23 @@
-from django.test import TestCase
-
-# Create your tests here.
+from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from django.urls import reverse
+from rest_framework.authtoken.models import Token
+from django.utils.timezone import now
 from Account.models import CustomUser
 from Profile.models import Account
 from .models import Destination, Log
 import uuid
-from datetime import datetime
-from django.utils.timezone import now
 
 class DestinationLogTests(APITestCase):
+
     def setUp(self):
-        # Create user & login
-        self.user = CustomUser.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        # Create user and token
+        self.user = CustomUser.objects.create_user(email='testuser@gmail.com', password='testpass')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
-        # Create account
+        # Create account and destination
         self.account = Account.objects.create(name="Test Account")
-
-        # Create destination
         self.destination = Destination.objects.create(
             account=self.account,
             url='https://webhook.site/test',
@@ -31,7 +28,7 @@ class DestinationLogTests(APITestCase):
         )
 
     def test_create_destination(self):
-        url = reverse('destination-list')  # from router
+        url = reverse('destination-list')
         data = {
             'account': self.account.id,
             'url': 'https://example.com/hook',
@@ -51,7 +48,7 @@ class DestinationLogTests(APITestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_log_read_only(self):
-        log = Log.objects.create(
+        Log.objects.create(
             event_id=uuid.uuid4(),
             account=self.account,
             destination=self.destination,

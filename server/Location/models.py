@@ -1,5 +1,4 @@
 from django.db import models
-# from django.contrib.auth.models import User
 from Profile.models import Account
 import uuid
 from Account.models import CustomUser
@@ -42,7 +41,8 @@ class Log(models.Model):
     received_timestamp = models.DateTimeField()  
     processed_timestamp = models.DateTimeField()  
     received_data = models.JSONField()  
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)  
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    response_message = models.TextField(null=True, blank=True)  
 
     def __str__(self):
         return f"Event {self.event_id} ({self.status})"

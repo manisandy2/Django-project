@@ -23,7 +23,7 @@ class Account(models.Model):
     updated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='accounts_updated')  # mandatory
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.id})"
     
 class Role(models.Model):
     ROLE_CHOICES = [

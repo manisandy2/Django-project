@@ -5,30 +5,10 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import re
 
-# class AccountSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Account
-#         fields = '__all__'
-#         read_only_fields = ('app_secret_token', 'created_at', 'updated_at')
-
-
-
-
-# class AccountMemberSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = AccountMember
-#         fields = '__all__'
-#         read_only_fields = ('created_at', 'updated_at')
-
-
-
-
-
-############################################################################################################
 
 from rest_framework import serializers
 from .models import Account, Role, AccountMember
-from Account.models import CustomUser  # Assuming CustomUser is in 'Account' app
+from Account.models import CustomUser  
 
 class AccountSerializer(serializers.ModelSerializer):
     created_by = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())

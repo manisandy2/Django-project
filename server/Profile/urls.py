@@ -8,5 +8,5 @@ router.register(r'roles', RoleViewSet)
 router.register(r'account-members', AccountMemberViewSet)
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
