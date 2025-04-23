@@ -6,6 +6,7 @@ __pycache__
 db.sqlite3
 media
 
+Data Pusher API.yaml
 # Backup files # 
 *.bak 
 

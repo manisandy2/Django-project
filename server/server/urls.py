@@ -70,18 +70,13 @@ urlpatterns = [
     # Swagger UI
     # re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    
-    # Swagger UI
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    
-    # Redoc (optional)
-    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-    # Admin panel
     path('admin/', admin.site.urls),
-
-    # App-specific routes
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path('account/', include('Account.urls')),
     path('location/', include('Location.urls')),
     path('profile/', include('Profile.urls')),
+    path('accounts/', include('allauth.urls')),
+  
 ]

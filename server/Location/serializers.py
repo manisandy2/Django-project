@@ -17,16 +17,7 @@ class DestinationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at']
 
-
 class LogSerializer(serializers.ModelSerializer):
-    # account_name = serializers.ReadOnlyField(source='account.name')
-    # destination_url = serializers.ReadOnlyField(source='destination.url')
-
     class Meta:
         model = Log
-        fields = [
-            'event_id', 'account', 'destination', 'received_timestamp',
-            'processed_timestamp', 'received_data', 'status'
-        ]
-        read_only_fields = fields  # make log read-only through API
-
+        fields = '__all__'

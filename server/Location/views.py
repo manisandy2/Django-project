@@ -11,9 +11,18 @@ from rest_framework.throttling import UserRateThrottle
 from django.utils.timezone import now
 from Profile.models import Account
 from .models import Destination, Log
-from .tasks import push_to_destinations
+from .tasks import send_data_to_destination
 from rest_framework.exceptions import PermissionDenied
 import uuid
+from rest_framework.views import APIView
+from django.utils.decorators import method_decorator
+from ratelimit.decorators import *
+from ratelimit import rate_limited
+from django_ratelimit.decorators import ratelimit
+from Location.tasks import send_data_to_destination
+from rest_framework.generics import ListAPIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 
 class DestinationViewSet(viewsets.ModelViewSet):
     queryset = Destination.objects.all()
@@ -73,6 +82,19 @@ class LogViewSet(viewsets.ReadOnlyModelViewSet):
         if account.id not in user.accounts.values_list('id', flat=True):
             raise PermissionDenied("You don't have access to this account")
         serializer.save()
+
+class LogListView(ListAPIView):
+    serializer_class = LogSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ['destination_id', 'status', 'received_timestamp', 'processed_timestamp']
+    ordering_fields = ['received_timestamp', 'processed_timestamp']
+
+    def get_queryset(self):
+        account_id = self.request.query_params.get('account_id')
+        if not account_id:
+            return Log.objects.none()
+        return Log.objects.filter(account_id=account_id)
     
 
 class AccountRateThrottle(UserRateThrottle):
@@ -80,23 +102,34 @@ class AccountRateThrottle(UserRateThrottle):
 
 @api_view(['POST'])
 @throttle_classes([AccountRateThrottle])
-def incoming_data(request):
-    token = request.headers.get("CL-X-TOKEN")
-    event_id = request.headers.get("CL-X-EVENT-ID")
+class IncomingDataView(APIView):
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/s', method='POST', block=True))
+    def post(self, request, *args, **kwargs):
+        event_id = request.headers.get("CL-X-EVENT-ID")
+        token = request.headers.get("CL-X-TOKEN")
+        data = request.data
 
-    if not token or not event_id:
-        return Response({"success": False, "message": "Unauthenticated"}, status=401)
+        if not token:
+            return Response({"success": False, "message": "Unauthenticated"}, status=401)
+        if not isinstance(data, dict) or not event_id:
+            return Response({"success": False, "message": "Invalid Data"}, status=400)
 
-    try:
-        account = Account.objects.get(secret_token=token)
-    except Account.DoesNotExist:
-        return Response({"success": False, "message": "Unauthenticated"}, status=401)
+        try:
+            account = Account.objects.get(app_secret_token=token)
+        except Account.DoesNotExist:
+            return Response({"success": False, "message": "Unauthenticated"}, status=401)
 
-    if not isinstance(request.data, dict):
-        return Response({"success": False, "message": "Invalid Data"}, status=400)
+        destinations = Destination.objects.filter(account=account)
+        for dest in destinations:
+            send_data_to_destination.delay(
+                event_id=event_id,
+                account_id=account.id,
+                destination_id=dest.id,
+                destination_url=dest.url,
+                method=dest.http_method,
+                headers=dest.headers,
+                payload=data
+            )
 
-    # Trigger async task only
-    push_to_destinations.delay(event_id, account.id, request.data)
-
-    return Response({"success": True, "message": "Data Received"})
+        return Response({"success": True, "message": "Data Received"}, status=200)
 
